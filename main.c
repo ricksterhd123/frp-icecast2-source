@@ -53,52 +53,6 @@ void shutdown(shout_t *instance)
 	shout_shutdown();
 }
 
-/**
- * @brief Reads the contents of a file into buffer, expects the user to free buffer 
- * when no longer being used.
- * @param filePath path to file to read into buffer
- * @param buffer pointer to buffer
- * @return int 
- */
-// size_t read_file(const char *filePath, char **buffer)
-// {
-// 	FILE *pFile;
-// 	long lSize;
-// 	size_t result;
-
-// 	pFile = fopen(filePath, "r");
-// 	if (pFile == NULL)
-// 	{
-// 		fprintf(stderr, "File error, could not open %s\n", filePath);
-// 		return 0;
-// 	}
-
-// 	fseek(pFile, 0, SEEK_END);
-// 	lSize = ftell(pFile);
-// 	rewind(pFile);
-// 	printf("ftell gave us %ld\n", lSize);
-
-// 	*buffer = (char *)malloc(sizeof(char) * lSize);
-// 	if (*buffer == NULL)
-// 	{
-// 		fprintf(stderr, "Memory error\n");
-// 		// TODO: panic
-// 		return 0;
-// 	}
-
-// 	result = fread(*buffer, 1, lSize, pFile);
-
-// 	if (result != lSize)
-// 	{
-// 		fprintf(stderr, "Reading error, size of buffer and size of file are not the same\n");
-// 	}
-
-// 	printf("here the size is %lu\n", strlen(*buffer));
-// 	fclose(pFile);
-
-// 	return result;
-// }
-
 int main(int argc, char **argv)
 {
 	if (argc <= 1)
@@ -132,14 +86,9 @@ int main(int argc, char **argv)
 		unsigned char buff[4096];
 
 		printf("Connected to server...\n");
-		// TODO: read a file into the buffer
-		// TODO: send buffer contents into icecast via shout_send
-		// TODO: clean up then finish
 
 		printf("Reading file %s into buffer\n", filePath);
 
-		//char *buffer;
-		// size_t result = read_file(filePath, &buffer);
 		FILE *pFile = fopen(filePath, "r");
 
 		if (pFile == NULL)
@@ -148,18 +97,6 @@ int main(int argc, char **argv)
 			return 0;
 		}
 
-
-		// if (!result)
-		// {
-		// 	fprintf(stderr, "Could not read file into buffer\n");
-		// 	// shout_close(instance);
-		// 	// shutdown(instance);
-		// 	return EXIT_FAILURE;
-		// }
-
-		//printf("Buffer has %lu bytes\n", sizeof(buffer));
-
-		printf("Finished, no issues\n");
 		while (1)
 		{
 			size_t result = fread(buff, 1, sizeof(buff), pFile);
@@ -172,17 +109,22 @@ int main(int argc, char **argv)
 				if (ret != SHOUTERR_SUCCESS)
 				{
 					fprintf(stderr, "Send error: %s", shout_get_error(instance));
-					//free(buffer);
 					shout_close(instance);
 					shutdown(instance);
 					return EXIT_FAILURE;
 				}
+			} else {
+				printf("Nothing to push!");
+				break;
 			}
 
-			printf("%s", getTimeStamp());
 			printf("Syncing\n");
 			shout_sync(instance);
+
+			printf("%s\n", getTimeStamp());
 		}
+
+		printf("Closing connection\n");
 
 		shout_close(instance);
 	}
