@@ -4,17 +4,6 @@
 #include <shout/shout.h>
 #include <time.h>
 
-const char *getTimeStamp()
-{
-	time_t rawtime = time(NULL);
-	struct tm *timeinfo;
-
-	time(&rawtime);
-	timeinfo = localtime(&rawtime);
-
-	return asctime(timeinfo);
-}
-
 /**
  * @brief Setup libshout to connect to our icecast2 server
  * 
@@ -80,15 +69,15 @@ int main(int argc, char **argv)
 		return EXIT_FAILURE;
 	}
 
+	printf("Connected to server...\n");
+
 	// Connect to server
 	if (shout_open(instance) == SHOUTERR_SUCCESS)
 	{
 		unsigned char buff[4096];
 
-		printf("Connected to server...\n");
 
-		printf("Reading file %s into buffer\n", filePath);
-
+		printf("Reading file %s\n", filePath);
 		FILE *pFile = fopen(filePath, "r");
 
 		if (pFile == NULL)
@@ -97,14 +86,16 @@ int main(int argc, char **argv)
 			return 0;
 		}
 
+		printf("Sending to icecast2\n");
 		while (1)
 		{
 			size_t result = fread(buff, 1, sizeof(buff), pFile);
 
-			if (result > 0) {
-				printf("Sending %lu\n", result);
+			if (result > 0) 
+			{
+				//printf("Sending %lu\n", result);
 				int ret = shout_send(instance, buff, result);
-				printf("Response %d\n", ret);
+				//printf("Response %d\n", ret);
 
 				if (ret != SHOUTERR_SUCCESS)
 				{
@@ -113,21 +104,20 @@ int main(int argc, char **argv)
 					shutdown(instance);
 					return EXIT_FAILURE;
 				}
-			} else {
-				printf("Nothing to push!");
+			} 
+			else 
+			{
+				printf("Finished sending\n");
 				break;
 			}
 
-			printf("Syncing\n");
 			shout_sync(instance);
-
-			printf("%s\n", getTimeStamp());
 		}
 
 		printf("Closing connection\n");
 
 		shout_close(instance);
-	}
+	} 
 	else
 	{
 		fprintf(stderr, "Failed to connect to server\n");
