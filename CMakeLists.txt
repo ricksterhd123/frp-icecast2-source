@@ -6,8 +6,8 @@ find_library(dl dl)
 find_library(pthread pthread)
 find_library(shout shout)
 
-include_directories(./sqlite)
-link_directories(./sqlite)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/sqlite)
+add_library(sqlite3 SHARED ${CMAKE_CURRENT_SOURCE_DIR}/src/sqlite/sqlite3.c)
 
-add_executable(frp-radio-source main.c)
-target_link_libraries(frp-radio-source PRIVATE shout pthread dl m)
+add_executable(frp-radio-source ${CMAKE_CURRENT_SOURCE_DIR}/src/main.c)
+target_link_libraries(frp-radio-source PRIVATE sqlite3 shout pthread dl m)

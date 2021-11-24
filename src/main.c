@@ -3,6 +3,42 @@
 #include <stdio.h>
 #include <shout/shout.h>
 #include <time.h>
+#include <sqlite3.h>
+
+/**
+ * @brief Entire playlist
+ */
+char* playlist_table = "CREATE TABLE IF NOT EXISTS playlist ( "
+"video_id INTEGER PRIMARY KEY"
+"date_added INTEGER"
+" )";
+
+sqlite3* dbConnect(char* filePath)
+{	
+	sqlite3* db;
+	int rc = sqlite3_open(filePath, &db);
+
+	if (rc) 
+	{
+		fprintf(stderr, "Could not open database %s\n", filePath);
+		sqlite3_close(db);
+		return NULL;
+	}
+
+	char* errorMessage;
+
+	rc = sqlite3_exec(db, "CREATE TABLE test (x INTEGER PRIMARY KEY)", NULL, NULL, &errorMessage);
+
+	if (rc) 
+	{
+		fprintf(stderr, "%s\n", errorMessage);
+		sqlite3_free(errorMessage);
+		sqlite3_close(db);
+		return NULL;
+	}
+
+	return db;
+}
 
 /**
  * @brief Setup libshout to connect to our icecast2 server
@@ -108,7 +144,7 @@ int main(int argc, char **argv)
 			else 
 			{
 				printf("Finished sending\n");
-				break;
+				continue;
 			}
 
 			shout_sync(instance);
