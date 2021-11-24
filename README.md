@@ -1,9 +1,10 @@
 # Icecast2 source for radio FRP
 
-Custom icecast2 source using libshout
+Custom icecast2 mp3 source using libshout
 
 ## features
-- [] Stream music playlist
+- [] Event driven
+- [] Stream music playlists
 - [] Skip on request
-- [] 
+- [] Persistent
 
