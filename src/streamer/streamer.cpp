@@ -77,7 +77,7 @@ void Streamer::close()
     }
 }
 
-void Streamer::send_file(string filename)
+void Streamer::send_mp3(string filename)
 {
     std::ifstream file(filename);
 

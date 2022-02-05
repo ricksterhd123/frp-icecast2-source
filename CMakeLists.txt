@@ -5,6 +5,8 @@ find_library(m m)
 find_library(dl dl)
 find_library(shout shout)
 
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/src/redis-plus-plus-1.3.3/)
+
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/src/sqlite
     ${CMAKE_CURRENT_SOURCE_DIR}/src/streamer
@@ -18,4 +20,4 @@ add_library(
 )
 
 add_executable(frp-radio-source ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp)
-target_link_libraries(frp-radio-source PRIVATE sqlite3 shout pthread dl m)
+target_link_libraries(frp-radio-source PRIVATE sqlite3 shout dl m redis++)

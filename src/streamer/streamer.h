@@ -14,6 +14,8 @@ extern "C" {
 class Streamer {
     private:
         shout_t* instance;
+        thread* worker;
+
         string hostname;
         unsigned short port;
         string user;
@@ -22,6 +24,7 @@ class Streamer {
         size_t buffer_size = 4096;
 
         vector<string> file_queue;
+        void send_mp3(string filename);
 
     public:
         Streamer(
@@ -36,5 +39,5 @@ class Streamer {
 
         void open();
         void close();
-        void send_file(string filename);
+        bool isPlaying();
 };
