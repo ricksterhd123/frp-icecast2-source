@@ -1,5 +1,8 @@
+#pragma once
+
 #include <vector>
 #include <iostream>
+#include <fstream>
 #include <exception>
 
 using namespace std;
@@ -16,10 +19,10 @@ class Streamer {
         string user;
         string password;
         string mount;
+        size_t buffer_size = 4096;
 
         vector<string> file_queue;
 
-        //string pop_file();
     public:
         Streamer(
             string hostname,
@@ -33,6 +36,5 @@ class Streamer {
 
         bool open();
         void close();
-
-        //void push_file(string filename);
+        void send_file(string filename);
 };
