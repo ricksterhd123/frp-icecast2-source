@@ -8,3 +8,6 @@ Custom icecast2 mp3 source using libshout
 - [] Skip on request
 - [] Persistent
 
+## Requirements:
+- icecast2
+- libshout3-dev
