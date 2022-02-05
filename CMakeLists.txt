@@ -3,7 +3,6 @@ project(frp-radio-source)
 
 find_library(m m)
 find_library(dl dl)
-find_library(pthread pthread)
 find_library(shout shout)
 
 include_directories(
