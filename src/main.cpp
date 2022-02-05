@@ -1,5 +1,6 @@
 #include <string>
 #include <iostream>
+#include <thread>
 #include <streamer.h>
 
 using namespace std;
@@ -14,12 +15,26 @@ int main(int argc, char **argv) {
     try {
         Streamer streamer("127.0.0.1", 8000, "source", "At3tQH9K4pKoDt", "/stream");
         streamer.open();
-        cout << "opened connection to icecast" << endl;
+        cout << "Opened connection to icecast" << endl;
+
+        thread t([&](Streamer* streamer, const char* filename) {
+            streamer->send_file(filename);
+        }, &streamer, argv[1]);
+        t.detach();
+
+        while (!t.joinable()) {
+            cout << "Hello world" << endl;
+        }
+
+        t.join();
+
         streamer.close();
-        cout << "close connection" << endl;
+        cout << "Closed connection" << endl;
     } catch (const runtime_error& e) {
         cout << e.what() << endl;
         cout << "ending" << endl;
+        exit(EXIT_FAILURE);
     }
+
     return 0;
 }

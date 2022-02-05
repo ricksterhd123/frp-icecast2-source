@@ -5,8 +5,8 @@ Streamer::Streamer(
     unsigned short port,
     string user,
     string password,
-    string mount
-) {
+    string mount)
+{
     this->hostname = hostname;
     this->port = port;
     this->password = password;
@@ -16,7 +16,8 @@ Streamer::Streamer(
 
     this->instance = shout_new();
 
-    if (this->instance == NULL) {
+    if (this->instance == NULL)
+    {
         shout_shutdown();
         throw runtime_error("libshout failed to allocate memory");
     }
@@ -29,29 +30,35 @@ Streamer::Streamer(
     result |= shout_set_mount(instance, mount.c_str());
     result |= shout_set_format(instance, SHOUT_FORMAT_MP3);
 
-    if (result != SHOUTERR_SUCCESS) {
+    if (result != SHOUTERR_SUCCESS)
+    {
         shout_free(instance);
         shout_shutdown();
         throw runtime_error("libshout failed to initialize");
     }
 }
 
-Streamer::~Streamer() {
+Streamer::~Streamer()
+{
     // Stop detached thread
     // Cleanup shout
-    if (this->instance != NULL) {
+    if (this->instance != NULL)
+    {
         shout_close(this->instance);
         shout_free(this->instance);
         shout_shutdown();
     }
 }
 
-bool Streamer::open() {
-    if (this->instance == NULL) {
+bool Streamer::open()
+{
+    if (this->instance == NULL)
+    {
         return false;
     }
 
-    if (shout_open(this->instance) != SHOUTERR_SUCCESS) {
+    if (shout_open(this->instance) != SHOUTERR_SUCCESS)
+    {
         shout_free(this->instance);
         shout_shutdown();
         throw runtime_error("libshout failed to open");
@@ -62,23 +69,26 @@ bool Streamer::open() {
     return true;
 }
 
-void Streamer::close() {
+void Streamer::close()
+{
     // Stop detached thread
     // Cleanup shout
-    if (this->instance != NULL) {    
+    if (this->instance != NULL)
+    {
         shout_close(this->instance);
         shout_free(this->instance);
         shout_shutdown();
     }
 }
 
-// void Streamer::push_file(string filename) {
-//     this->file_queue.insert(this->file_queue.begin(), filename);
-// }
-
-// string Streamer::pop_file() {
-//     // TODO: do these two operations in one step
-//     string last = this->file_queue.at(this->file_queue.size() - 1);
-//     this->file_queue.pop_back();
-//     return last;
-// }
+void Streamer::send_file(string filename)
+{
+    std::ifstream file(filename);
+    while (!file.eof())
+    {
+        unsigned char buffer[this->buffer_size];
+        file.read((char *)buffer, sizeof(buffer));
+        shout_send(this->instance, buffer, file.gcount());
+        shout_sync(this->instance);
+    }
+}
