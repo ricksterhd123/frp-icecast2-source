@@ -6,41 +6,6 @@
 #include <sqlite3.h>
 
 /**
- * @brief Entire playlist
- */
-char* playlist_table = "CREATE TABLE IF NOT EXISTS playlist ( "
-"video_id INTEGER PRIMARY KEY"
-"date_added INTEGER"
-" )";
-
-sqlite3* dbConnect(char* filePath)
-{	
-	sqlite3* db;
-	int rc = sqlite3_open(filePath, &db);
-
-	if (rc) 
-	{
-		fprintf(stderr, "Could not open database %s\n", filePath);
-		sqlite3_close(db);
-		return NULL;
-	}
-
-	char* errorMessage;
-
-	rc = sqlite3_exec(db, "CREATE TABLE test (x INTEGER PRIMARY KEY)", NULL, NULL, &errorMessage);
-
-	if (rc) 
-	{
-		fprintf(stderr, "%s\n", errorMessage);
-		sqlite3_free(errorMessage);
-		sqlite3_close(db);
-		return NULL;
-	}
-
-	return db;
-}
-
-/**
  * @brief Setup libshout to connect to our icecast2 server
  * 
  * @param instance shout_t pointer returned from shout_new()
@@ -98,7 +63,7 @@ int main(int argc, char **argv)
 	shout_t *instance = shout_new();
 
 	// Setup libshout to connect to our icecast server
-	if (!setup_shout(instance, "127.0.0.1", 8000, "source", "hackme", "/stream"))
+	if (!setup_shout(instance, "127.0.0.1", 8000, "source", "At3tQH9K4pKoDt", "/stream"))
 	{
 		fprintf(stderr, "Failed to setup shout\n");
 		shutdown(instance);
