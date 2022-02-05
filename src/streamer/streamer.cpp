@@ -50,11 +50,11 @@ Streamer::~Streamer()
     }
 }
 
-bool Streamer::open()
+void Streamer::open()
 {
     if (this->instance == NULL)
     {
-        return false;
+        throw runtime_error("Streamer must be initialized");
     }
 
     if (shout_open(this->instance) != SHOUTERR_SUCCESS)
@@ -63,10 +63,6 @@ bool Streamer::open()
         shout_shutdown();
         throw runtime_error("libshout failed to open");
     }
-
-    // Start detached thread that consumes file queue
-
-    return true;
 }
 
 void Streamer::close()
@@ -84,11 +80,24 @@ void Streamer::close()
 void Streamer::send_file(string filename)
 {
     std::ifstream file(filename);
+
     while (!file.eof())
     {
+        // Read contents into buffer
         unsigned char buffer[this->buffer_size];
         file.read((char *)buffer, sizeof(buffer));
-        shout_send(this->instance, buffer, file.gcount());
+
+        // Stream buffer to icecast
+        if (shout_send(this->instance, buffer, file.gcount()) != SHOUTERR_SUCCESS) {
+            // TODO: Check if this is actually needed?
+            shout_close(this->instance);
+            shout_free(this->instance);
+            shout_shutdown();
+
+            throw runtime_error("libshout failed to send data to icecast server");
+        }
+
+        // Sync with icecast
         shout_sync(this->instance);
     }
 }

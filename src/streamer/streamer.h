@@ -34,7 +34,7 @@ class Streamer {
 
         ~Streamer();
 
-        bool open();
+        void open();
         void close();
         void send_file(string filename);
 };
