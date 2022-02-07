@@ -36,6 +36,9 @@ Streamer::Streamer(
         shout_shutdown();
         throw runtime_error("libshout failed to initialize");
     }
+
+    // Now Streamer is waiting for open() to be called
+    this->status = WAITING;
 }
 
 Streamer::~Streamer()
@@ -63,6 +66,47 @@ void Streamer::open()
         shout_shutdown();
         throw runtime_error("libshout failed to open");
     }
+
+    // Now Streamer is running
+    this->status = RUNNING;
+
+    // Once this thread has stopped, we need to signal back
+    // to the main thread
+    this->worker = thread(
+        [](Streamer *streamer)
+        {
+            try
+            {
+                streamer->work();
+            }
+            catch (const runtime_error &e)
+            {
+                cout << e.what() << endl;
+                terminate();
+            }
+        },
+        this);
+
+    this->worker.detach();
+}
+
+void Streamer::work()
+{
+    while (this->getStatus() == RUNNING)
+    {
+        if (this->getQueueSize() > 0)
+        {
+            string file = this->getFile();
+            cout << file << endl;
+            this->sendMP3(file);
+            this->removeFile();
+        }
+        else
+        {
+            // do nothing until queue size has increased
+            shout_sync(this->instance);
+        }
+    }
 }
 
 void Streamer::close()
@@ -77,14 +121,15 @@ void Streamer::close()
     }
 }
 
-void Streamer::send_mp3(string filename)
+// TODO: Do we know that filename actually exists?
+void Streamer::sendMP3(string filename)
 {
     std::ifstream file(filename);
 
     while (!file.eof())
     {
         // Read contents into buffer
-        unsigned char buffer[this->buffer_size];
+        unsigned char buffer[this->bufferSize];
         file.read((char *)buffer, sizeof(buffer));
 
         // Stream buffer to icecast
@@ -103,7 +148,24 @@ void Streamer::send_mp3(string filename)
     }
 }
 
-bool Streamer::isPlaying()
+void Streamer::addFile(string filename)
 {
-    return true;
+    if (find(this->fileQueue.begin(), this->fileQueue.end(), filename) == this->fileQueue.end())
+    {
+        this->fileQueue.push_back(filename);
+    }
+}
+
+void Streamer::removeFile(string filename)
+{
+    vector<string>::iterator iter = find(this->fileQueue.begin(), this->fileQueue.end(), filename);
+    if (iter != this->fileQueue.end())
+    {
+        this->fileQueue.erase(iter);
+    }
+}
+
+void Streamer::removeFile(int index)
+{
+    this->fileQueue.erase(this->fileQueue.begin() + index);
 }

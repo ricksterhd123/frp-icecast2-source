@@ -12,20 +12,14 @@ const char *channel_name = "channel1";
 // URI of redis server
 const char *redis_uri = "tcp://127.0.0.1:6379";
 
-int main(int argc, char **argv)
+int main()
 {
-    if (argc <= 1)
-    {
-        cout << "You must provide a path to file!\n"
-             << endl;
-        cout << "Usage: " << argv[0] << " [FILE]\n"
-             << endl;
-        exit(EXIT_FAILURE);
-    }
-
     try
     {
+        cout << "Connecting to icecast2" << endl;
         Streamer streamer("127.0.0.1", 8000, "source", "At3tQH9K4pKoDt", "/stream");
+
+        streamer.open();
 
         cout << "Connecting to redis" << endl;
         auto redis = Redis(redis_uri);
@@ -37,13 +31,15 @@ int main(int argc, char **argv)
         sub.on_message(
             [&streamer](string channel, string msg)
             {
-                if (channel == "channel1")
+                if (channel == channel_name)
                 {
-                    cout << streamer.isPlaying() << endl;
+                    cout << streamer.getStatus() << endl;
+                    streamer.addFile(msg);
                 }
-            });
+            }
+        );
 
-        // Subscribe to channels and patterns.
+        // Subscribe to channel
         sub.subscribe(channel_name);
 
         // Consume messages in a loop.
@@ -61,16 +57,8 @@ int main(int argc, char **argv)
             }
         }
 
-        // streamer.open();
-        // cout << "Opened connection to icecast" << endl;
-
-        // thread t([&](Streamer* streamer, const char* filename) {
-        //     streamer->send_mp3(filename);
-        // }, &streamer, argv[1]);
-        // t.detach();
-
-        // streamer.close();
-        // cout << "Closed connection" << endl;
+        streamer.close();
+        cout << "Closed connection" << endl;
     }
     catch (const runtime_error &e)
     {
